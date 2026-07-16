@@ -21,26 +21,28 @@ jobs:
       with:
         python-version: '3.11'
 
-    # Step importante: Verificar onde o Python está
-    - name: Verificando instalação do Python
+    # PASSO 1: Verificar o que tem no diretório
+    - name: Listando arquivos do projeto
       run: |
-        which python
-        python --version
-        python -m pip --version
+        echo "=== Arquivos no diretório ==="
+        ls -la
+        echo "=== Conteúdo do requirements.txt ==="
+        cat requirements.txt || echo "Arquivo requirements.txt NÃO encontrado!"
 
-    # Step melhorado: Instalar dependências com saída detalhada
-    - name: Instalando dependências
+    # PASSO 2: Instalar pip e pytest (de forma explícita)
+    - name: Instalando pytest diretamente
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt --verbose
-        pip list  # Lista todos os pacotes instalados (para debug)
+        pip install pytest
+        # Verifica se instalou
+        pip show pytest
 
-    # Step de verificação: Confirma que o pytest está lá
-    - name: Verificando instalação do pytest
+    # PASSO 3: Verificar instalação
+    - name: Testando import do pytest
       run: |
-        python -c "import pytest; print(f'Pytest instalado com sucesso! Versão: {pytest.__version__}')"
+        python -c "import pytest; print(f'✅ Pytest instalado! Versão: {pytest.__version__}')"
 
-    # Step de testes: Agora com certeza que o pytest existe
+    # PASSO 4: Rodar os testes
     - name: Executando os testes
       run: |
         python -m pytest test_calculadora.py -v
