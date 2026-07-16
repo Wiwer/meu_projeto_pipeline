@@ -35,7 +35,7 @@ def api_dividir():
 @app.route('/')
 def home():
     return jsonify({
-        'mensagem': 'Bem-vindo à Calculadora API!NOVA',
+        'mensagem': '🚀 DEPLOY AUTOMATICO FUNCIONANDO!',
         'endpoints': {
             '/somar?a=2&b=3': 'Soma dois números',
             '/dividir?a=10&b=2': 'Divide dois números'
