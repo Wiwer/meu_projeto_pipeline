@@ -1,3 +1,7 @@
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
 def somar(a, b):
     return a + b
 
@@ -5,3 +9,38 @@ def dividir(a, b):
     if b == 0:
         raise ValueError("Não é possível dividir por zero!")
     return a / b
+
+@app.route('/somar', methods=['GET'])
+def api_somar():
+    try:
+        a = float(request.args.get('a', 0))
+        b = float(request.args.get('b', 0))
+        resultado = somar(a, b)
+        return jsonify({'operacao': 'soma', 'resultado': resultado})
+    except Exception as e:
+        return jsonify({'erro': str(e)}), 400
+
+@app.route('/dividir', methods=['GET'])
+def api_dividir():
+    try:
+        a = float(request.args.get('a', 0))
+        b = float(request.args.get('b', 0))
+        resultado = dividir(a, b)
+        return jsonify({'operacao': 'divisao', 'resultado': resultado})
+    except ValueError as e:
+        return jsonify({'erro': str(e)}), 400
+    except Exception as e:
+        return jsonify({'erro': str(e)}), 400
+
+@app.route('/')
+def home():
+    return jsonify({
+        'mensagem': 'Bem-vindo à Calculadora API!',
+        'endpoints': {
+            '/somar?a=2&b=3': 'Soma dois números',
+            '/dividir?a=10&b=2': 'Divide dois números'
+        }
+    })
+
+if __name__ == '__main__':
+    app.run(debug=True)
