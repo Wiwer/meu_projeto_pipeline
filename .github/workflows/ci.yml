@@ -39,7 +39,7 @@ jobs:
     # Step 4: RODAR OS TESTES (o coração da pipeline)
     - name: Executando os testes com Pytest
       run: |
-        pytest test_calculadora.py -v
+        python -m pytest test_calculadora.py -v
 
     # (Opcional) Step 5: Se os testes passarem, crio um "pacote" do código
     - name: Gerando um pacote de distribuição (build)
