@@ -1,0 +1,48 @@
+# Nome da sua pipeline (vai aparecer no painel do GitHub)
+name: Pipeline de Desenvolvimento
+
+# Quando ela vai ser disparada?
+on:
+  push:
+    branches: [ "main" ]  # Toda vez que alguém der push na branch main
+  pull_request:
+    branches: [ "main" ]  # E quando alguém abrir um Pull Request para a main
+
+# Aqui definimos o que essa pipeline vai fazer (os jobs)
+jobs:
+
+  # Nome do nosso job principal
+  build-and-test:
+
+    # O "agente" (servidor virtual) onde a pipeline vai rodar
+    runs-on: ubuntu-latest
+
+    # O fluxo de etapas (steps) que serão executadas em sequência
+    steps:
+    
+    # Step 1: Baixar o código que está no GitHub para dentro desse servidor virtual
+    - name: Baixando o código do repositório
+      uses: actions/checkout@v4
+
+    # Step 2: Instalar a versão correta do Python
+    - name: Configurando o Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    # Step 3: Instalar as bibliotecas que estão no requirements.txt
+    - name: Instalando dependências
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    # Step 4: RODAR OS TESTES (o coração da pipeline)
+    - name: Executando os testes com Pytest
+      run: |
+        pytest test_calculadora.py -v
+
+    # (Opcional) Step 5: Se os testes passarem, crio um "pacote" do código
+    - name: Gerando um pacote de distribuição (build)
+      run: |
+        python -m pip install --upgrade build
+        python -m build
