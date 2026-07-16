@@ -1,48 +1,46 @@
-# Nome da sua pipeline (vai aparecer no painel do GitHub)
 name: Pipeline de Desenvolvimento
 
-# Quando ela vai ser disparada?
 on:
   push:
-    branches: [ "main" ]  # Toda vez que alguém der push na branch main
+    branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]  # E quando alguém abrir um Pull Request para a main
+    branches: [ "main" ]
 
-# Aqui definimos o que essa pipeline vai fazer (os jobs)
 jobs:
-
-  # Nome do nosso job principal
   build-and-test:
 
-    # O "agente" (servidor virtual) onde a pipeline vai rodar
     runs-on: ubuntu-latest
 
-    # O fluxo de etapas (steps) que serão executadas em sequência
     steps:
     
-    # Step 1: Baixar o código que está no GitHub para dentro desse servidor virtual
     - name: Baixando o código do repositório
       uses: actions/checkout@v4
 
-    # Step 2: Instalar a versão correta do Python
     - name: Configurando o Python 3.11
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
-    # Step 3: Instalar as bibliotecas que estão no requirements.txt
+    # Step importante: Verificar onde o Python está
+    - name: Verificando instalação do Python
+      run: |
+        which python
+        python --version
+        python -m pip --version
+
+    # Step melhorado: Instalar dependências com saída detalhada
     - name: Instalando dependências
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install -r requirements.txt --verbose
+        pip list  # Lista todos os pacotes instalados (para debug)
 
-    # Step 4: RODAR OS TESTES (o coração da pipeline)
-    - name: Executando os testes com Pytest
+    # Step de verificação: Confirma que o pytest está lá
+    - name: Verificando instalação do pytest
+      run: |
+        python -c "import pytest; print(f'Pytest instalado com sucesso! Versão: {pytest.__version__}')"
+
+    # Step de testes: Agora com certeza que o pytest existe
+    - name: Executando os testes
       run: |
         python -m pytest test_calculadora.py -v
-
-    # (Opcional) Step 5: Se os testes passarem, crio um "pacote" do código
-    - name: Gerando um pacote de distribuição (build)
-      run: |
-        python -m pip install --upgrade build
-        python -m build
