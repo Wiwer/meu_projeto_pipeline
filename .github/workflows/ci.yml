@@ -29,8 +29,7 @@ jobs:
       run: |
         python -m pytest test_calculadora.py -v --cov=calculadora --cov-report=term-missing
 
-  # JOB 2: Deploy via SSH (MAIS CONFIÁVEL!)
-  deploy:
+   deploy:
     needs: build-and-test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
@@ -39,7 +38,7 @@ jobs:
     - name: Baixando o código
       uses: actions/checkout@v4
 
-    - name: Instalando ferramenta de deploy
+    - name: Instalando ferramentas SSH
       run: |
         sudo apt-get update
         sudo apt-get install -y ssh rsync
@@ -51,9 +50,10 @@ jobs:
         mkdir -p ~/.ssh
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
+        # Importante: Adiciona o host às known_hosts
         ssh-keyscan -H ssh.pythonanywhere.com >> ~/.ssh/known_hosts
 
-    - name: Deploy no PythonAnywhere (via rsync)
+    - name: Deploy via rsync
       run: |
         rsync -avz --delete \
           --exclude='.git' \
@@ -61,16 +61,14 @@ jobs:
           --exclude='__pycache__' \
           --exclude='.pytest_cache' \
           --exclude='venv' \
-          --exclude='*.pyc' \
+          -e "ssh -o StrictHostKeyChecking=no" \
           ./ wiwer@ssh.pythonanywhere.com:/home/wiwer/mysite/
 
     - name: Recarregando aplicação
       run: |
-        ssh wiwer@ssh.pythonanywhere.com "touch /var/www/wiwer_pythonanywhere_com_wsgi.py"
+        ssh -o StrictHostKeyChecking=no wiwer@ssh.pythonanywhere.com "touch /var/www/wiwer_pythonanywhere_com_wsgi.py"
 
     - name: Verificando deploy
       run: |
-        echo "✅ Deploy concluído com sucesso!"
-        echo "🌐 Acesse: https://wiwer.pythonanywhere.com"
-        echo "⏳ Aguarde 30 segundos para o servidor recarregar..."
-        sleep 30
+        echo "✅ Deploy concluído!"
+        echo "🌐 https://wiwer.pythonanywhere.com"
