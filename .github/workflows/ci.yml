@@ -7,6 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
+  # JOB 1: Testes (CI)
   build-and-test:
 
     runs-on: ubuntu-latest
@@ -25,14 +26,11 @@ jobs:
       run: |
         echo "=== Arquivos no diretório ==="
         ls -la
-        echo "=== Conteúdo do requirements.txt ==="
-        cat requirements.txt || echo "requirements.txt não encontrado!"
 
-    - name: Instalando dependências (incluindo Flask)
+    - name: Instalando dependências
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip list  # Mostra todos os pacotes instalados
 
     - name: Verificando instalação do Flask e Pytest
       run: |
@@ -42,3 +40,48 @@ jobs:
     - name: Executando os testes com cobertura
       run: |
         python -m pytest test_calculadora.py -v --cov=calculadora --cov-report=term-missing
+
+  # JOB 2: Deploy Automático (CD)
+  deploy:
+    # Só executa se os testes passarem
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    # Só executa na branch main
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Baixando o código do repositório
+      uses: actions/checkout@v4
+
+    - name: Preparando arquivos para deploy
+      run: |
+        # Cria um arquivo .zip com todo o código
+        zip -r deploy.zip . -x "*.git*" "*__pycache__*" "*.pytest_cache*"
+        echo "📦 Pacote criado com sucesso!"
+
+    - name: Deploy no PythonAnywhere via API
+      env:
+        API_TOKEN: ${{ secrets.PYTHONANYWHERE_TOKEN }}
+        USERNAME: "wiwer"  # Troque pelo seu usuário
+      run: |
+        # Envia o arquivo para o PythonAnywhere
+        curl -X POST \
+          -H "Authorization: Token ${API_TOKEN}" \
+          -F "content=@deploy.zip" \
+          "https://www.pythonanywhere.com/api/v0/user/${USERNAME}/files/path/home/${USERNAME}/mysite.zip"
+        
+        # Extrai o arquivo na pasta mysite
+        curl -X POST \
+          -H "Authorization: Token ${API_TOKEN}" \
+          "https://www.pythonanywhere.com/api/v0/user/${USERNAME}/files/path/home/${USERNAME}/mysite.zip/extract/"
+        
+        # Recarrega a aplicação web
+        curl -X POST \
+          -H "Authorization: Token ${API_TOKEN}" \
+          "https://www.pythonanywhere.com/api/v0/user/${USERNAME}/webapps/${USERNAME}.pythonanywhere.com/reload/"
+        
+        echo "🚀 Deploy realizado com sucesso!"
+
+    - name: Verificando deploy
+      run: |
+        echo "✅ Deploy concluído! Acesse: https://wiwer.pythonanywhere.com"
