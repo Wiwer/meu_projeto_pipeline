@@ -41,47 +41,51 @@ jobs:
       run: |
         python -m pytest test_calculadora.py -v --cov=calculadora --cov-report=term-missing
 
-  # JOB 2: Deploy Automático (CD)
+    # JOB 2: Deploy Automático (CD) - Versão Melhorada
   deploy:
-    # Só executa se os testes passarem
     needs: build-and-test
     runs-on: ubuntu-latest
-    # Só executa na branch main
     if: github.ref == 'refs/heads/main'
 
     steps:
     - name: Baixando o código do repositório
       uses: actions/checkout@v4
 
-    - name: Preparando arquivos para deploy
+    - name: Criando pacote de deploy
       run: |
-        # Cria um arquivo .zip com todo o código
-        zip -r deploy.zip . -x "*.git*" "*__pycache__*" "*.pytest_cache*"
-        echo "📦 Pacote criado com sucesso!"
+        # Remove arquivos desnecessários
+        rm -rf .git .github __pycache__ .pytest_cache
+        zip -r deploy.zip .
+        echo "📦 Pacote criado: deploy.zip"
 
-    - name: Deploy no PythonAnywhere via API
+    - name: Deploy no PythonAnywhere (via API)
       env:
         API_TOKEN: ${{ secrets.PYTHONANYWHERE_TOKEN }}
-        USERNAME: "wiwer"  # Troque pelo seu usuário
       run: |
-        # Envia o arquivo para o PythonAnywhere
+        # Upload do arquivo
         curl -X POST \
           -H "Authorization: Token ${API_TOKEN}" \
           -F "content=@deploy.zip" \
-          "https://www.pythonanywhere.com/api/v0/user/${USERNAME}/files/path/home/${USERNAME}/mysite.zip"
+          "https://www.pythonanywhere.com/api/v0/user/wiwer/files/path/home/wiwer/deploy.zip"
+        
+        echo "📤 Upload concluído!"
         
         # Extrai o arquivo na pasta mysite
         curl -X POST \
           -H "Authorization: Token ${API_TOKEN}" \
-          "https://www.pythonanywhere.com/api/v0/user/${USERNAME}/files/path/home/${USERNAME}/mysite.zip/extract/"
+          "https://www.pythonanywhere.com/api/v0/user/wiwer/files/path/home/wiwer/deploy.zip/extract/"
         
-        # Recarrega a aplicação web
+        echo "📂 Extração concluída!"
+        
+        # Força o reload da aplicação
         curl -X POST \
           -H "Authorization: Token ${API_TOKEN}" \
-          "https://www.pythonanywhere.com/api/v0/user/${USERNAME}/webapps/${USERNAME}.pythonanywhere.com/reload/"
+          "https://www.pythonanywhere.com/api/v0/user/wiwer/webapps/wiwer.pythonanywhere.com/reload/"
         
-        echo "🚀 Deploy realizado com sucesso!"
+        echo "🔄 Reload executado!"
 
     - name: Verificando deploy
       run: |
-        echo "✅ Deploy concluído! Acesse: https://wiwer.pythonanywhere.com"
+        echo "✅ Deploy concluído! Aguarde 30 segundos..."
+        sleep 30
+        echo "🌐 Acesse: https://wiwer.pythonanywhere.com"
