@@ -27,7 +27,9 @@ jobs:
     - name: Cache pip
       uses: actions/cache@v4
       with:
-        path: ~/.cache/pip
+        path: |
+          ~/.cache/pip
+          ~/.cache/pip/http
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
@@ -113,6 +115,26 @@ jobs:
           -H "Authorization: Token $PYTHONANYWHERE_API_TOKEN" \
           -H "Content-Type: application/json" \
           "https://www.pythonanywhere.com/api/v0/user/wiwer/webapps/wiwer.pythonanywhere.com/reload/"
+
+    - name: Validar deploy em produção
+      run: |
+        echo "Verificando endpoints públicos..."
+        MAX_RETRIES=5
+        RETRY=0
+        until [ "$RETRY" -ge "$MAX_RETRIES" ]; do
+          if curl -sS --fail "https://wiwer.pythonanywhere.com/hello" | python3 -c "import sys, json; data=json.load(sys.stdin); assert data.get('mensagem') == 'Olá, mundo!'" && \
+             curl -sS --fail "https://wiwer.pythonanywhere.com/" | python3 -c "import sys, json; data=json.load(sys.stdin); assert 'mensagem' in data and 'endpoints' in data"; then
+            echo "Deploy validado com sucesso."
+            break
+          fi
+          RETRY=$((RETRY + 1))
+          echo "Falha ao validar deploy. Tentativa $RETRY/$MAX_RETRIES..."
+          sleep 5
+        done
+        if [ "$RETRY" -ge "$MAX_RETRIES" ]; then
+          echo "Não foi possível validar o deploy após $MAX_RETRIES tentativas."
+          exit 1
+        fi
 
     - name: Verificando deploy
       run: |
