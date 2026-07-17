@@ -76,7 +76,7 @@ jobs:
       run: |
         echo "Iniciando deploy via git pull no servidor"
         ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no wiwer@ssh.pythonanywhere.com \
-          "cd /home/wiwer/mysite && git fetch origin && git reset --hard origin/main && touch /var/www/wiwer_pythonanywhere_com_wsgi.py"
+          "if [ -d /home/wiwer/mysite/.git ]; then cd /home/wiwer/mysite && git fetch --all && git reset --hard origin/main; else git clone https://github.com/Wiwer/meu_projeto_pipeline.git /home/wiwer/mysite || exit 1; fi && touch /var/www/wiwer_pythonanywhere_com_wsgi.py"
 
     - name: Recarregando aplicação
       run: |
