@@ -33,7 +33,7 @@ def test_api_endpoints():
     # hello
     r = client.get('/hello')
     assert r.status_code == 200
-    assert r.get_json().get('mensagem') == 'Hello, world! Olá, mundo! Atual'
+    assert r.get_json().get('mensagem') == 'Hello, world! Olá, mundo! Atual2'
 
     # soma endpoint valid
     r = client.get('/somar?a=2&b=3')
