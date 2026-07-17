@@ -43,10 +43,10 @@ jobs:
         PYTHONANYWHERE_API_TOKEN: ${{ secrets.PYTHONANYWHERE_API_TOKEN }}
       run: |
         echo "Iniciando deploy via API do PythonAnywhere"
-        curl -v -i --max-time 30 -X POST \
+        curl -v -i --http1.1 --fail --data '' --max-time 30 -X POST \
           -H "Authorization: Token $PYTHONANYWHERE_API_TOKEN" \
           -H "Content-Type: application/json" \
-          "https://www.pythonanywhere.com/api/v0/user/wiwer/webapps/wiwer.pythonanywhere.com/reload/" || true
+          "https://www.pythonanywhere.com/api/v0/user/wiwer/webapps/wiwer.pythonanywhere.com/reload/"
 
     - name: Verificando deploy
       run: |
