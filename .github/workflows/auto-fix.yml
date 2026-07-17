@@ -1,0 +1,29 @@
+name: Auto Fixer
+
+on:
+  workflow_run:
+    types: [completed]
+
+jobs:
+  autofix:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Baixando o código
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.AUTO_FIX_GH_PAT }}
+
+    - name: Configurar Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Executar auto-fix
+      env:
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        RUN_ID: ${{ github.event.workflow_run.id }}
+        AUTO_FIX_GH_PAT: ${{ secrets.AUTO_FIX_GH_PAT }}
+        GITHUB_ACTOR: ${{ github.actor }}
+      run: |
+        python3 .github/auto-fix/auto_fix.py
