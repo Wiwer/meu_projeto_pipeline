@@ -38,49 +38,15 @@ jobs:
     - name: Baixando o código
       uses: actions/checkout@v4
 
-    - name: Instalando ferramentas SSH
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y ssh rsync
-
-    - name: Configurando chave SSH
+    - name: Notificando PythonAnywhere para recarregar o app
       env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        PYTHONANYWHERE_API_TOKEN: ${{ secrets.PYTHONANYWHERE_API_TOKEN }}
       run: |
-        mkdir -p ~/.ssh
-        printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        # Importante: Adiciona o host às known_hosts
-        ssh-keyscan -H ssh.pythonanywhere.com >> ~/.ssh/known_hosts
-
-    - name: Teste de conexão SSH (debug)
-      continue-on-error: true
-      run: |
-        echo "=== SSH debug (verboso) ==="
-        ssh -i ~/.ssh/id_rsa -v wiwer@ssh.pythonanywhere.com || true
-
-    - name: Rsync dry-run (debug)
-      continue-on-error: true
-      run: |
-        echo "=== rsync dry-run ==="
-        rsync -avz --delete --dry-run \
-          --exclude='.git' \
-          --exclude='.github' \
-          --exclude='__pycache__' \
-          --exclude='.pytest_cache' \
-          --exclude='venv' \
-          -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
-          ./ wiwer@ssh.pythonanywhere.com:/home/wiwer/mysite/ || true
-
-    - name: Deploy via git pull on server
-      run: |
-        echo "Iniciando deploy via git pull no servidor"
-        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no wiwer@ssh.pythonanywhere.com \
-          "if [ -d ~/mysite/.git ]; then cd ~/mysite && git fetch --all && git reset --hard origin/main; else git clone https://github.com/Wiwer/meu_projeto_pipeline.git ~/mysite || exit 1; fi && touch /var/www/wiwer_pythonanywhere_com_wsgi.py"
-
-    - name: Recarregando aplicação
-      run: |
-        ssh -o StrictHostKeyChecking=no wiwer@ssh.pythonanywhere.com "touch /var/www/wiwer_pythonanywhere_com_wsgi.py"
+        echo "Iniciando deploy via API do PythonAnywhere"
+        curl -X POST \
+          -H "Authorization: Token $PYTHONANYWHERE_API_TOKEN" \
+          -H "Content-Type: application/json" \
+          "https://www.pythonanywhere.com/api/v0/user/wiwer/webapps/wiwer.pythonanywhere.com/reload/"
 
     - name: Verificando deploy
       run: |
