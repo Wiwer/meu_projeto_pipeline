@@ -38,6 +38,16 @@ jobs:
     - name: Baixando o código
       uses: actions/checkout@v4
 
+    - name: Validando token PythonAnywhere
+      env:
+        PYTHONANYWHERE_API_TOKEN: ${{ secrets.PYTHONANYWHERE_API_TOKEN }}
+      run: |
+        echo "Validando token e autorização no PythonAnywhere"
+        BASE_URL="https://www.pythonanywhere.com/api/v0/user/wiwer/files/path/home/wiwer/mysite"
+        curl -i --http1.1 --fail \
+          -H "Authorization: Token $PYTHONANYWHERE_API_TOKEN" \
+          "$BASE_URL/"
+
     - name: Sincronizando arquivos no PythonAnywhere
       env:
         PYTHONANYWHERE_API_TOKEN: ${{ secrets.PYTHONANYWHERE_API_TOKEN }}
