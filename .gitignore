@@ -1,0 +1,29 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pyt
+*.pyd
+
+# Test and coverage artifacts
+.coverage
+htmlcov/
+coverage.xml
+
+# Virtual environments
+venv/
+.env/
+.env
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+
+# Logs and runtime files
+*.log
+
+# GitHub Actions temp
+jobs.json
