@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.10, 3.11, 3.12]
+        python-version: ['3.10', '3.11', '3.12']
       fail-fast: false
 
     steps:
@@ -40,6 +40,19 @@ jobs:
     - name: Executando os testes com cobertura
       run: |
         python -m pytest -q --cov=calculadora --cov-report=xml --cov-report=term --cov-fail-under=85
+
+    - name: Debug: listar arquivos e checar coverage.xml
+      if: always()
+      run: |
+        echo "Python: $(python --version)"
+        echo "PWD: $(pwd)"
+        ls -la
+        if [ -f coverage.xml ]; then
+          echo "coverage.xml encontrado"
+          head -n 20 coverage.xml || true
+        else
+          echo "coverage.xml NÃO encontrado"
+        fi
 
     - name: Upload cobertura como artefato
       if: always()
