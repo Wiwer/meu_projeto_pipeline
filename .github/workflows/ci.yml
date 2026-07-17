@@ -48,10 +48,29 @@ jobs:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       run: |
         mkdir -p ~/.ssh
-        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         # Importante: Adiciona o host às known_hosts
         ssh-keyscan -H ssh.pythonanywhere.com >> ~/.ssh/known_hosts
+
+    - name: Teste de conexão SSH (debug)
+      continue-on-error: true
+      run: |
+        echo "=== SSH debug (verboso) ==="
+        ssh -i ~/.ssh/id_rsa -v wiwer@ssh.pythonanywhere.com || true
+
+    - name: Rsync dry-run (debug)
+      continue-on-error: true
+      run: |
+        echo "=== rsync dry-run ==="
+        rsync -avz --delete --dry-run \
+          --exclude='.git' \
+          --exclude='.github' \
+          --exclude='__pycache__' \
+          --exclude='.pytest_cache' \
+          --exclude='venv' \
+          -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
+          ./ wiwer@ssh.pythonanywhere.com:/home/wiwer/mysite/ || true
 
     - name: Deploy via rsync
       run: |
@@ -61,7 +80,7 @@ jobs:
           --exclude='__pycache__' \
           --exclude='.pytest_cache' \
           --exclude='venv' \
-          -e "ssh -o StrictHostKeyChecking=no" \
+          -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
           ./ wiwer@ssh.pythonanywhere.com:/home/wiwer/mysite/
 
     - name: Recarregando aplicação
