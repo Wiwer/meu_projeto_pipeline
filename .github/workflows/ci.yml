@@ -48,12 +48,7 @@ jobs:
           -H "Accept: application/json" \
           "https://www.pythonanywhere.com/api/v0/user/wiwer/webapps/wiwer.pythonanywhere.com/")
         echo "$WEBAPP_JSON"
-        SOURCE_DIR=$(python3 - <<'PY'
-import json, sys
-obj = json.load(sys.stdin)
-print(obj.get('source_directory', ''))
-PY
-<<< "$WEBAPP_JSON")
+        SOURCE_DIR=$(python3 -c "import json,sys; print(json.load(sys.stdin).get('source_directory',''))" <<< "$WEBAPP_JSON")
         if [ -z "$SOURCE_DIR" ]; then
           echo "Erro: source_directory não foi encontrado na resposta do webapp."
           exit 1
