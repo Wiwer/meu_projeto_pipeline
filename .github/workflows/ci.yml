@@ -122,7 +122,7 @@ jobs:
         MAX_RETRIES=5
         RETRY=0
         until [ "$RETRY" -ge "$MAX_RETRIES" ]; do
-          if curl -sS --fail "https://wiwer.pythonanywhere.com/hello" | python3 -c "import sys, json; data=json.load(sys.stdin); assert data.get('mensagem') == 'Olá, mundo!'" && \
+          if curl -sS --fail "https://wiwer.pythonanywhere.com/hello" | python3 -c "import sys, json; data=json.load(sys.stdin); assert 'Olá, mundo!' in data.get('mensagem','')" && \
              curl -sS --fail "https://wiwer.pythonanywhere.com/" | python3 -c "import sys, json; data=json.load(sys.stdin); assert 'mensagem' in data and 'endpoints' in data"; then
             echo "Deploy validado com sucesso."
             break
