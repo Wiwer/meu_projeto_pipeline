@@ -49,9 +49,8 @@ jobs:
           curl --fail --show-error --http1.1 --retry 2 --retry-delay 5 --retry-connrefused \
             -X POST \
             -H "Authorization: Token $PYTHONANYWHERE_API_TOKEN" \
-            -H "Content-Type: application/octet-stream" \
-            --data-binary "@$file" \
-            "$BASE_URL/$file/"
+            -F "content=@$file" \
+            "$BASE_URL/$file"
         done
 
     - name: Notificando PythonAnywhere para recarregar o app
