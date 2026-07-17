@@ -47,11 +47,11 @@ jobs:
         git ls-files | grep -v '^\.github/' | while IFS= read -r file; do
           echo "Fazendo upload de $file"
           curl --fail --show-error --http1.1 --retry 2 --retry-delay 5 --retry-connrefused \
-            -X PUT \
+            -X POST \
             -H "Authorization: Token $PYTHONANYWHERE_API_TOKEN" \
             -H "Content-Type: application/octet-stream" \
-            --upload-file "$file" \
-            "$BASE_URL/$file"
+            --data-binary "@$file" \
+            "$BASE_URL/$file/"
         done
 
     - name: Notificando PythonAnywhere para recarregar o app
