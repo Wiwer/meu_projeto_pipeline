@@ -35,7 +35,7 @@ def api_dividir():
 @app.route('/')
 def home():
     return jsonify({
-        'mensagem': '🚀 DEPLOY AUTOMATICO FUNCIONANDO! Quero ver se atualiza! Depois das alterações NOVAS2'
+        'mensagem': '🚀 DEPLOY AUTOMATICO FUNCIONANDO! Quero ver se atualiza! Depois das alterações NOVAS22'
         '',
         'endpoints': {
             '/somar?a=2&b=3': 'Soma dois números',
