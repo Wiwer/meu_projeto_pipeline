@@ -72,16 +72,11 @@ jobs:
           -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
           ./ wiwer@ssh.pythonanywhere.com:/home/wiwer/mysite/ || true
 
-    - name: Deploy via rsync
+    - name: Deploy via git pull on server
       run: |
-        rsync -avz --delete \
-          --exclude='.git' \
-          --exclude='.github' \
-          --exclude='__pycache__' \
-          --exclude='.pytest_cache' \
-          --exclude='venv' \
-          -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
-          ./ wiwer@ssh.pythonanywhere.com:/home/wiwer/mysite/
+        echo "Iniciando deploy via git pull no servidor"
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no wiwer@ssh.pythonanywhere.com \
+          "cd /home/wiwer/mysite && git fetch origin && git reset --hard origin/main && touch /var/www/wiwer_pythonanywhere_com_wsgi.py"
 
     - name: Recarregando aplicação
       run: |
