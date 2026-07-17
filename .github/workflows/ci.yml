@@ -49,7 +49,7 @@ jobs:
         path: coverage.xml
 
     - name: Publicar cobertura no Codecov
-      if: ${{ secrets.CODECOV_TOKEN != '' || github.event.repository.private == false }}
+      if: ${{ github.event.repository.private == false }}
       uses: codecov/codecov-action@v4
       with:
         files: coverage.xml
