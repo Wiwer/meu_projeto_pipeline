@@ -29,7 +29,7 @@ jobs:
       run: |
         python -m pytest test_calculadora.py -v --cov=calculadora --cov-report=term-missing
 
-   deploy:
+  deploy:
     needs: build-and-test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
