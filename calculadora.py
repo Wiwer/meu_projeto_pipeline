@@ -35,7 +35,7 @@ def api_dividir():
 @app.route('/')
 def home():
     return jsonify({
-        'mensagem': '🚀 DEPLOY AUTOMATICO FUNCIONANDO! 17071144',
+        'mensagem': '🚀 DEPLOY AUTOMATICO FUNCIONANDO! agoravai!',
         'endpoints': {
             '/somar?a=2&b=3': 'Soma dois números',
             '/dividir?a=10&b=2': 'Divide dois números'
