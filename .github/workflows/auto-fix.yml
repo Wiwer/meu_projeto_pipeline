@@ -2,7 +2,7 @@ name: Auto Fixer
 
 on:
   workflow_run:
-    workflows: ["Pipeline de Desenvolvimento"]
+    workflows: ["ci.yml"]
     types: [completed]
 
 jobs:
