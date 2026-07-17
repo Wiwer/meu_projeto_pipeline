@@ -1,6 +1,7 @@
 # 🧪 Meu Projeto com Pipeline CI/CD
 
 ![Pipeline Status](https://github.com/Wiwer/meu_projeto_pipeline/actions/workflows/ci.yml/badge.svg)
+![Coverage Status](https://codecov.io/gh/Wiwer/meu_projeto_pipeline/branch/main/graph/badge.svg)
 
 ## 📋 Sobre o Projeto
 
