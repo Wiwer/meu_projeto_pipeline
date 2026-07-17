@@ -43,7 +43,7 @@ jobs:
       run: |
         python -m pytest -q --cov=calculadora --cov-report=xml --cov-report=term --cov-fail-under=85
 
-    - name: Debug: listar arquivos e checar coverage.xml
+    - name: "Debug: listar arquivos e checar coverage.xml"
       if: always()
       run: |
         echo "Python: $(python --version)"
