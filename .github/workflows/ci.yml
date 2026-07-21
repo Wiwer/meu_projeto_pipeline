@@ -37,7 +37,16 @@ jobs:
     - name: Instalando dependências
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        python -m pip install -r requirements.txt
+
+    - name: Validando stack FastAPI no ambiente CI
+      run: |
+        python - <<'PY'
+        import fastapi, uvicorn, httpx
+        print(f"FastAPI: {fastapi.__version__}")
+        print(f"Uvicorn: {uvicorn.__version__}")
+        print(f"httpx: {httpx.__version__}")
+        PY
 
     - name: Executando os testes com cobertura
       run: |
@@ -83,6 +92,7 @@ jobs:
       env:
         PYTHONANYWHERE_API_TOKEN: ${{ secrets.PYTHONANYWHERE_API_TOKEN }}
       run: |
+        echo "Deploy usando FastAPI + Gunicorn/UvicornWorker (Procfile)"
         echo "Buscando source_directory do webapp PythonAnywhere"
         WEBAPP_JSON=$(curl -sS --http1.1 --fail \
           -H "Authorization: Token $PYTHONANYWHERE_API_TOKEN" \
@@ -118,13 +128,14 @@ jobs:
 
     - name: Validar deploy em produção
       run: |
-        echo "Verificando endpoints públicos..."
+        echo "Verificando endpoints públicos do padrão FastAPI..."
         MAX_RETRIES=5
         RETRY=0
         until [ "$RETRY" -ge "$MAX_RETRIES" ]; do
-          if curl -sS --fail "https://wiwer.pythonanywhere.com/hello" | python3 -c "import sys, json; data=json.load(sys.stdin); assert 'Olá, mundo!' in data.get('mensagem','')" && \
+          if curl -sS --fail "https://wiwer.pythonanywhere.com/docs" | grep -q "Swagger UI" && \
+             curl -sS --fail "https://wiwer.pythonanywhere.com/openapi.json" | python3 -c "import sys, json; data=json.load(sys.stdin); assert data.get('info', {}).get('title') == 'Calculadora API'" && \
              curl -sS --fail "https://wiwer.pythonanywhere.com/" | python3 -c "import sys, json; data=json.load(sys.stdin); assert 'mensagem' in data and 'endpoints' in data"; then
-            echo "Deploy validado com sucesso."
+            echo "Deploy validado com sucesso no padrão FastAPI."
             break
           fi
           RETRY=$((RETRY + 1))
