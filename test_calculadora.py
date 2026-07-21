@@ -20,82 +20,103 @@ def test_dividir_por_zero():
 
 
 def test_fastapi_docs_available():
-    from fastapi.testclient import TestClient
-
-    client = TestClient(calculadora.fastapi_app)
+    client = calculadora.app.test_client()
 
     docs = client.get('/docs')
     assert docs.status_code == 200
+    assert 'Swagger UI' in docs.get_data(as_text=True)
 
     openapi = client.get('/openapi.json')
     assert openapi.status_code == 200
-    schema = openapi.json()
+    schema = openapi.get_json()
     assert schema['info']['title'] == 'Calculadora API'
 
     root = client.get('/')
     assert root.status_code == 200
-    assert root.json()['mensagem']
+    assert root.get_json()['mensagem']
 
     hello = client.get('/hello')
     assert hello.status_code == 200
-    assert hello.json()['mensagem'] == 'Hello, world! Olá, mundo! Atual2'
+    assert hello.get_json()['mensagem'] == 'Hello, world! Olá, mundo! Atual2'
 
     dump = client.get('/dump')
     assert dump.status_code == 200
-    assert dump.json()['mensagem'] == 'dump endpoint funcionando! Com teste!'
+    assert dump.get_json()['mensagem'] == 'dump endpoint funcionando! Com teste!'
 
     soma = client.get('/somar?a=2&b=3')
     assert soma.status_code == 200
-    assert soma.json()['resultado'] == 5.0
+    assert soma.get_json()['resultado'] == 5.0
 
     divisao = client.get('/dividir?a=10&b=2')
     assert divisao.status_code == 200
-    assert divisao.json()['resultado'] == 5.0
+    assert divisao.get_json()['resultado'] == 5.0
 
     divisao_zero = client.get('/dividir?a=10&b=0')
     assert divisao_zero.status_code == 400
-    assert 'Não é possível dividir por zero' in divisao_zero.json()['detail']
+    assert 'Não é possível dividir por zero' in divisao_zero.get_json()['erro']
 
 
 def test_api_endpoints():
+    from fastapi.testclient import TestClient
+
     app = calculadora.app
     client = app.test_client()
+    fastapi_client = TestClient(calculadora.fastapi_app)
 
-    # home
+    # Flask compatibility surface used by deploy
     r = client.get('/')
     assert r.status_code == 200
     data = r.get_json()
     assert 'mensagem' in data
     assert 'endpoints' in data
 
-    # hello
     r = client.get('/hello')
     assert r.status_code == 200
     assert r.get_json().get('mensagem') == 'Hello, world! Olá, mundo! Atual2'
 
-    # hello
     r = client.get('/dump')
     assert r.status_code == 200
     assert r.get_json().get('mensagem') == 'dump endpoint funcionando! Com teste!'
 
-    # soma endpoint valid
     r = client.get('/somar?a=2&b=3')
     assert r.status_code == 200
     assert r.get_json().get('resultado') == 5.0
 
-    # soma endpoint invalid param -> 400
-    r = client.get('/somar?a=abc&b=2')
-    assert r.status_code == 400
-
-    # dividir endpoint valid
     r = client.get('/dividir?a=10&b=2')
     assert r.status_code == 200
     assert r.get_json().get('resultado') == 5.0
 
-    # dividir by zero -> 400
     r = client.get('/dividir?a=10&b=0')
     assert r.status_code == 400
     assert 'Não é possível dividir por zero' in r.get_json().get('erro')
+
+    # FastAPI app surface used by the ASGI runtime
+    r = fastapi_client.get('/')
+    assert r.status_code == 200
+    assert 'mensagem' in r.json()
+
+    r = fastapi_client.get('/hello')
+    assert r.status_code == 200
+    assert r.json().get('mensagem') == 'Hello, world! Olá, mundo! Atual2'
+
+    r = fastapi_client.get('/dump')
+    assert r.status_code == 200
+    assert r.json().get('mensagem') == 'dump endpoint funcionando! Com teste!'
+
+    r = fastapi_client.get('/somar?a=2&b=3')
+    assert r.status_code == 200
+    assert r.json().get('resultado') == 5.0
+
+    r = fastapi_client.get('/somar?a=abc&b=2')
+    assert r.status_code == 422
+
+    r = fastapi_client.get('/dividir?a=10&b=2')
+    assert r.status_code == 200
+    assert r.json().get('resultado') == 5.0
+
+    r = fastapi_client.get('/dividir?a=10&b=0')
+    assert r.status_code == 400
+    assert 'Não é possível dividir por zero' in r.json().get('detail')
 
 
 @pytest.mark.parametrize("a,b,expected", [

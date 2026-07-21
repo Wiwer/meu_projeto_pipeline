@@ -1,11 +1,12 @@
 from urllib.parse import parse_qs
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 
 app = Flask(__name__)
 
 try:
     from fastapi import FastAPI, HTTPException, Query
+    from fastapi.openapi.docs import get_swagger_ui_html
 except ImportError:  # pragma: no cover - fallback para ambientes sem FastAPI instalado
     FASTAPI_AVAILABLE = False
     fastapi_app = None
@@ -71,6 +72,26 @@ def hello():
 @app.route('/dump')
 def dump():
     return jsonify({'mensagem': 'dump endpoint funcionando! Com teste!'})
+
+
+@app.route('/docs')
+def flask_docs():
+    if FASTAPI_AVAILABLE:
+        swagger_page = get_swagger_ui_html(
+            openapi_url=fastapi_app.openapi_url,
+            title=f"{fastapi_app.title} - Swagger UI",
+        )
+        return Response(swagger_page.body, mimetype='text/html; charset=utf-8')
+    return jsonify({'mensagem': 'Swagger UI fallback ativo.'})
+
+
+@app.route('/openapi.json')
+def flask_openapi():
+    if FASTAPI_AVAILABLE:
+        return jsonify(fastapi_app.openapi())
+    return jsonify({
+        'info': {'title': 'Calculadora API', 'version': '1.0.0'}
+    })
 
 
 if FASTAPI_AVAILABLE:
