@@ -49,3 +49,10 @@ def hello():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+@app.route('/dump')
+def dump():
+    return jsonify({'mensagem': 'dump endpoint funcionando!'})
+
+if __name__ == '__main__':
+    app.run(debug=True)
