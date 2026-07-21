@@ -1,1 +1,1 @@
-web: gunicorn calculadora:app
+web: gunicorn -k uvicorn.workers.UvicornWorker calculadora:fastapi_app

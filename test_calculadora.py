@@ -19,6 +19,44 @@ def test_dividir_por_zero():
         calculadora.dividir(5, 0)
 
 
+def test_fastapi_docs_available():
+    from fastapi.testclient import TestClient
+
+    client = TestClient(calculadora.fastapi_app)
+
+    docs = client.get('/docs')
+    assert docs.status_code == 200
+
+    openapi = client.get('/openapi.json')
+    assert openapi.status_code == 200
+    schema = openapi.json()
+    assert schema['info']['title'] == 'Calculadora API'
+
+    root = client.get('/')
+    assert root.status_code == 200
+    assert root.json()['mensagem']
+
+    hello = client.get('/hello')
+    assert hello.status_code == 200
+    assert hello.json()['mensagem'] == 'Hello, world! Olá, mundo! Atual2'
+
+    dump = client.get('/dump')
+    assert dump.status_code == 200
+    assert dump.json()['mensagem'] == 'dump endpoint funcionando! Com teste!'
+
+    soma = client.get('/somar?a=2&b=3')
+    assert soma.status_code == 200
+    assert soma.json()['resultado'] == 5.0
+
+    divisao = client.get('/dividir?a=10&b=2')
+    assert divisao.status_code == 200
+    assert divisao.json()['resultado'] == 5.0
+
+    divisao_zero = client.get('/dividir?a=10&b=0')
+    assert divisao_zero.status_code == 400
+    assert 'Não é possível dividir por zero' in divisao_zero.json()['detail']
+
+
 def test_api_endpoints():
     app = calculadora.app
     client = app.test_client()
