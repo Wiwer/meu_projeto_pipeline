@@ -52,7 +52,7 @@ if __name__ == '__main__':
 
 @app.route('/dump')
 def dump():
-    return jsonify({'mensagem': 'dump endpoint funcionando!'})
+    return jsonify({'mensagem': 'dump endpoint funcionando! Com teste!'})
 
 if __name__ == '__main__':
     app.run(debug=True)

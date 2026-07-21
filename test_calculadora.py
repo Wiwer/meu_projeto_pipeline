@@ -35,6 +35,11 @@ def test_api_endpoints():
     assert r.status_code == 200
     assert r.get_json().get('mensagem') == 'Hello, world! Olá, mundo! Atual2'
 
+    # hello
+    r = client.get('/dump')
+    assert r.status_code == 200
+    assert r.get_json().get('mensagem') == 'dump endpoint funcionando! Com teste!'
+
     # soma endpoint valid
     r = client.get('/somar?a=2&b=3')
     assert r.status_code == 200
